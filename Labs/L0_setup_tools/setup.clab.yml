@@ -1,0 +1,49 @@
+# ACN Lab L0 — Setup-Check: containerlab, Netztools, Traffic-Mitschnitt
+# Deploy:  containerlab deploy -t setup.clab.yml
+# Abbau:   containerlab destroy -t setup.clab.yml --cleanup
+# Doku:    labsheet.md
+#
+# Hinweis: Interface-IPs werden per `exec` gesetzt (läuft nach dem Anlegen der Links).
+# FRR übernimmt nur das Routing (hier OSPF), weil Zebra die frr.conf liest, bevor die
+# containerlab-Links existieren.
+name: acn-l0-setup
+
+# Mgmt-Netz IPv4-only: containerlabs Default (dual-stack, 3fff:172:20:20::/64) gibt den Containern
+# eine IPv6-Default-Route ohne echten IPv6-Egress — Clients ohne Happy-Eyeballs (busybox wget/apk)
+# blockieren dann am toten AAAA-Pfad und `apk add`/`iperf3` hängen. Explizites v4-Subnet plus
+# leeres v6-Subnet schaltet das Mgmt-IPv6 ab (clab legt das Netz dann ohne v6 neu an).
+mgmt:
+  ipv4-subnet: 172.20.20.0/24
+  ipv6-subnet: ""
+
+topology:
+  nodes:
+    client:
+      kind: linux
+      image: alpine:3.20
+      exec:
+        - ip addr add 10.10.10.2/24 dev eth1
+        - ip link set eth1 up
+        - ip route add 10.10.20.0/24 via 10.10.10.1
+    router:
+      kind: linux
+      image: frrouting/frr:latest
+      binds:
+        - configs/daemons:/etc/frr/daemons
+        - configs/vtysh.conf:/etc/frr/vtysh.conf
+        - configs/router.conf:/etc/frr/frr.conf
+      exec:
+        - ip addr add 10.10.10.1/24 dev eth1
+        - ip addr add 10.10.20.1/24 dev eth2
+        - ip link set eth1 up
+        - ip link set eth2 up
+    server:
+      kind: linux
+      image: alpine:3.20
+      exec:
+        - ip addr add 10.10.20.3/24 dev eth1
+        - ip link set eth1 up
+        - ip route add 10.10.10.0/24 via 10.10.20.1
+  links:
+    - endpoints: ["client:eth1", "router:eth1"]
+    - endpoints: ["router:eth2", "server:eth1"]

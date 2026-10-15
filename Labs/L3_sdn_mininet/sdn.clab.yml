@@ -1,0 +1,30 @@
+# ACN Lab L3 — SDN/OpenFlow mit Mininet, Open vSwitch und os-ken
+# Deploy:  docker build -t acn-l3-mininet:2026.10 . && containerlab deploy -t sdn.clab.yml
+# Abbau:   containerlab destroy -t sdn.clab.yml --cleanup
+# Doku:    labsheet.md
+#
+# Ein einziger Knoten enthält das komplette Mininet-Labor (Mininet baut sein virtuelles
+# Netz in Namespaces *im Container* auf — daher privileged). OVS läuft als Daemon im
+# Knoten, der os-ken-Controller verbindet sich über 127.0.0.1:6633.
+#
+# Einstieg:  docker exec -it clab-acn-l3-mininet-mininet bash
+#
+# Mgmt-Netz IPv4-only (siehe Stolperfalle 9): containerlabs dual-stack-Default gibt den
+# Containern eine IPv6-Default-Route ohne echten IPv6-Egress — Clients ohne Happy-Eyeballs
+# (busybox, apt) blockieren dann an toten AAAA-Pfaden.
+mgmt:
+  ipv4-subnet: 172.20.20.0/24
+  ipv6-subnet: ""
+
+name: acn-l3-mininet
+
+topology:
+  nodes:
+    mininet:
+      kind: linux
+      image: acn-l3-mininet:2026.10
+      binds:
+        - .:/lab
+      exec:
+        # Open vSwitch-Daemon starten (ovsdb-server + ovs-vswitchd), bevor mn läuft
+        - sh -c "nohup /usr/share/openvswitch/scripts/ovs-ctl start >/tmp/ovs-start.log 2>&1"

@@ -1,0 +1,43 @@
+# ACN Lab L4 — P4: Repeater & minimalistischer L2-Switch auf bmv2
+# Deploy:  docker build -t acn-l4-p4:2026.10 . && containerlab deploy -t p4.clab.yml
+# Abbau:   containerlab destroy -t p4.clab.yml --cleanup
+# Doku:    labsheet.md
+#
+# Das P4-Programm wird im Switch-Knoten per exec kompiliert (p4c) und simple_switch
+# läuft mit den veth-Interfaces des Knotens. Die Quellen liegen via bind unter /p4.
+#
+# Mgmt-Netz IPv4-only (siehe Stolperfalle 9): containerlabs dual-stack-Default gibt den
+# Containern eine IPv6-Default-Route ohne echten IPv6-Egress — Clients ohne Happy-Eyeballs
+# (busybox) blockieren dann an toten AAAA-Pfaden.
+mgmt:
+  ipv4-subnet: 172.20.20.0/24
+  ipv6-subnet: ""
+
+name: acn-l4-p4
+
+topology:
+  nodes:
+    h1:
+      kind: linux
+      image: alpine:3.20
+      exec:
+        - ip addr add 10.0.0.1/24 dev eth1
+        - ip link set eth1 up
+    h2:
+      kind: linux
+      image: alpine:3.20
+      exec:
+        - ip addr add 10.0.0.2/24 dev eth1
+        - ip link set eth1 up
+    switch:
+      kind: linux
+      image: acn-l4-p4:2026.10
+      binds:
+        - p4:/p4
+      exec:
+        - sh -c "p4c --target bmv2 --arch v1model /p4/repeater.p4 -o /tmp/build/repeater"
+        - sh -c "nohup simple_switch --thrift-port 9090 -i 1@eth1 -i 2@eth2 /tmp/build/repeater/repeater.json >/tmp/simple_switch.log 2>&1 &"
+      # für Beispiel 2 (L2-Switch): simple_switch beenden, l2switch.json laden — siehe labsheet.md
+  links:
+    - endpoints: ["h1:eth1", "switch:eth1"]
+    - endpoints: ["h2:eth1", "switch:eth2"]

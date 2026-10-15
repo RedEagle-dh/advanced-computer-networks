@@ -1,0 +1,33 @@
+# Build-Outputs (jederzeit via `marp` bzw. `devenv shell -- pdfs` reproduzierbar)
+**/*.pdf
+**/*.pptx
+**/*.aux
+**/*.log
+**/*.out
+**/*.synctex.gz
+# Lokal erzeugte Veröffentlichungsfassung (CI baut sie für GitHub Pages, `pages` lokal)
+public/
+# Nix/devenv
+.devenv/
+.direnv/
+node_modules/
+# Nicht-Lehrinhalt (Fremdmaterial, Recherche-Archive)
+old-pptx/
+!old-prona-slides/
+gartner/
+# Slidev-Präsentationsfassung: vollständig generiert (tools/to-slidev.mjs), wird NICHT
+# versioniert — jederzeit reproduzierbar via `devenv shell -- slidev-convert|slidev-build`
+slidev/
+# Copyright-kritische Bilder (Fremd-Folien-Screenshots, Gartner, NC-ND-Material): liegen
+# innerhalb der figures-Ordner, damit die Decks sie mit relativem Pfad einbinden können,
+# sind aber NIE Teil des öffentlichen Repos. Die CI entfernt die Verweise vor dem Rendern
+# (.github/workflows/pages.yml, Schritt „Nicht-öffentliche Bilder ausblenden").
+figures/*/copyright/
+figures/copyrighted/
+# Labs-Altbestand (GNS3, lizenzierte Images) — nicht für das öffentliche Repo
+Labs/!old/
+# Arbeitsdokumente (nicht für das Repo)
+*.swp
+PLANNED-CHANGES.md
+CHANGELOG.md
+AGENTS.md

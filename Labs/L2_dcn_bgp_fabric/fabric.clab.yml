@@ -1,0 +1,159 @@
+# ACN Lab L2 — Leaf-Spine-Fabric mit BGP (FRR)
+# Deploy:  containerlab deploy -t fabric.clab.yml
+# Abbau:   containerlab destroy -t fabric.clab.yml --cleanup
+# Doku:    labsheet.md
+#
+# Adressierung per `exec` (läuft nach dem Anlegen der Links). FRR macht nur Routing (BGP/BFD).
+# Grund: Zebra liest frr.conf, bevor die Links existieren. Zusätzlich wird bgpd am Ende einmal
+# neu gestartet (watchfrr respawnt ihn) — das behebt das NHT-Race ("Waiting for NHT").
+# ACHTUNG: `frrinit.sh restart` NICHT verwenden — es beendet PID 1, Docker startet den Container
+# neu und alle veth-Interfaces gehen verloren.
+name: acn-l2-fabric
+
+# Mgmt-Netz IPv4-only (siehe Stolperfalle 9): containerlabs dual-stack-Default gibt den Containern
+# eine IPv6-Default-Route ohne echten IPv6-Egress — Clients ohne Happy-Eyeballs (busybox) blockieren
+# dann an toten AAAA-Pfaden (z. B. `apk add`).
+mgmt:
+  ipv4-subnet: 172.20.20.0/24
+  ipv6-subnet: ""
+
+topology:
+  nodes:
+    leaf1:
+      kind: linux
+      image: frrouting/frr:latest
+      binds:
+        - configs/daemons:/etc/frr/daemons
+        - configs/vtysh.conf:/etc/frr/vtysh.conf
+        - configs/leaf1.conf:/etc/frr/frr.conf
+      exec:
+        - ip addr add 10.0.1.2/30 dev eth1
+        - ip link set eth1 up
+        - ip addr add 10.1.1.2/30 dev eth2
+        - ip link set eth2 up
+        - ip addr add 172.23.24.1/24 dev eth3
+        - ip link set eth3 up
+        - sh -c "sleep 4; pkill bgpd || true"
+    leaf2:
+      kind: linux
+      image: frrouting/frr:latest
+      binds:
+        - configs/daemons:/etc/frr/daemons
+        - configs/vtysh.conf:/etc/frr/vtysh.conf
+        - configs/leaf2.conf:/etc/frr/frr.conf
+      exec:
+        - ip addr add 10.0.2.2/30 dev eth1
+        - ip link set eth1 up
+        - ip addr add 10.1.2.2/30 dev eth2
+        - ip link set eth2 up
+        - ip addr add 172.23.25.1/24 dev eth3
+        - ip link set eth3 up
+        - sh -c "sleep 4; pkill bgpd || true"
+    leaf3:
+      kind: linux
+      image: frrouting/frr:latest
+      binds:
+        - configs/daemons:/etc/frr/daemons
+        - configs/vtysh.conf:/etc/frr/vtysh.conf
+        - configs/leaf3.conf:/etc/frr/frr.conf
+      exec:
+        - ip addr add 10.0.3.2/30 dev eth1
+        - ip link set eth1 up
+        - ip addr add 10.1.3.2/30 dev eth2
+        - ip link set eth2 up
+        - ip addr add 172.23.26.1/24 dev eth3
+        - ip link set eth3 up
+        - sh -c "sleep 4; pkill bgpd || true"
+    leaf4:
+      kind: linux
+      image: frrouting/frr:latest
+      binds:
+        - configs/daemons:/etc/frr/daemons
+        - configs/vtysh.conf:/etc/frr/vtysh.conf
+        - configs/leaf4.conf:/etc/frr/frr.conf
+      exec:
+        - ip addr add 10.0.4.2/30 dev eth1
+        - ip link set eth1 up
+        - ip addr add 10.1.4.2/30 dev eth2
+        - ip link set eth2 up
+        - ip addr add 172.23.27.1/24 dev eth3
+        - ip link set eth3 up
+        - sh -c "sleep 4; pkill bgpd || true"
+    spine1:
+      kind: linux
+      image: frrouting/frr:latest
+      binds:
+        - configs/daemons:/etc/frr/daemons
+        - configs/vtysh.conf:/etc/frr/vtysh.conf
+        - configs/spine1.conf:/etc/frr/frr.conf
+      exec:
+        - ip addr add 10.0.1.1/30 dev eth1
+        - ip link set eth1 up
+        - ip addr add 10.0.2.1/30 dev eth2
+        - ip link set eth2 up
+        - ip addr add 10.0.3.1/30 dev eth3
+        - ip link set eth3 up
+        - ip addr add 10.0.4.1/30 dev eth4
+        - ip link set eth4 up
+        - sh -c "sleep 4; pkill bgpd || true"
+    spine2:
+      kind: linux
+      image: frrouting/frr:latest
+      binds:
+        - configs/daemons:/etc/frr/daemons
+        - configs/vtysh.conf:/etc/frr/vtysh.conf
+        - configs/spine2.conf:/etc/frr/frr.conf
+      exec:
+        - ip addr add 10.1.1.1/30 dev eth1
+        - ip link set eth1 up
+        - ip addr add 10.1.2.1/30 dev eth2
+        - ip link set eth2 up
+        - ip addr add 10.1.3.1/30 dev eth3
+        - ip link set eth3 up
+        - ip addr add 10.1.4.1/30 dev eth4
+        - ip link set eth4 up
+        - sh -c "sleep 4; pkill bgpd || true"
+    host1:
+      kind: linux
+      image: alpine:3.20
+      exec:
+        - ip addr add 172.23.24.100/24 dev eth1
+        - ip link set eth1 up
+        - ip route add 172.23.0.0/16 via 172.23.24.1
+    host2:
+      kind: linux
+      image: alpine:3.20
+      exec:
+        - ip addr add 172.23.25.100/24 dev eth1
+        - ip link set eth1 up
+        - ip route add 172.23.0.0/16 via 172.23.25.1
+    host3:
+      kind: linux
+      image: alpine:3.20
+      exec:
+        - ip addr add 172.23.26.100/24 dev eth1
+        - ip link set eth1 up
+        - ip route add 172.23.0.0/16 via 172.23.26.1
+    host4:
+      kind: linux
+      image: alpine:3.20
+      exec:
+        - ip addr add 172.23.27.100/24 dev eth1
+        - ip link set eth1 up
+        - ip route add 172.23.0.0/16 via 172.23.27.1
+
+  links:
+    # Leaf ↔ Spine (zwei Pfade pro Leaf)
+    - endpoints: ["leaf1:eth1", "spine1:eth1"]
+    - endpoints: ["leaf1:eth2", "spine2:eth1"]
+    - endpoints: ["leaf2:eth1", "spine1:eth2"]
+    - endpoints: ["leaf2:eth2", "spine2:eth2"]
+    - endpoints: ["leaf3:eth1", "spine1:eth3"]
+    - endpoints: ["leaf3:eth2", "spine2:eth3"]
+    - endpoints: ["leaf4:eth1", "spine1:eth4"]
+    - endpoints: ["leaf4:eth2", "spine2:eth4"]
+    # Leaf ↔ Host
+    - endpoints: ["leaf1:eth3", "host1:eth1"]
+    - endpoints: ["leaf2:eth3", "host2:eth1"]
+    - endpoints: ["leaf3:eth3", "host3:eth1"]
+    - endpoints: ["leaf4:eth3", "host4:eth1"]

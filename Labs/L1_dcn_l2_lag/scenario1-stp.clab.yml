@@ -1,0 +1,89 @@
+# ACN Lab L1 — Szenario 1: Spanning Tree in einer Schleife
+# Deploy:  containerlab deploy -t scenario1-stp.clab.yml
+# Abbau:   containerlab destroy -t scenario1-stp.clab.yml --cleanup
+# Doku:    labsheet.md
+#
+# Vier Switches als Linux-Bridges mit STP (802.1D), Ringtopologie -> eine Schleife.
+# Beobachtung: STP blockiert genau einen Link; bei Ausfall konvergiert das Netz neu (langsam!).
+name: acn-l1-stp
+
+# Mgmt-Netz IPv4-only (siehe Stolperfalle 9): containerlabs dual-stack-Default gibt den Containern
+# eine IPv6-Default-Route ohne echten IPv6-Egress — Clients ohne Happy-Eyeballs (busybox) blockieren
+# dann an toten AAAA-Pfaden (z. B. `apk add`).
+mgmt:
+  ipv4-subnet: 172.20.20.0/24
+  ipv6-subnet: ""
+
+topology:
+  nodes:
+    sw1:
+      kind: linux
+      image: frrouting/frr:latest
+      exec:
+        - ip link add br0 type bridge
+        - ip link set br0 type bridge stp_state 1
+        - ip link set br0 type bridge priority 4096
+        - ip link set eth1 master br0
+        - ip link set eth2 master br0
+        - ip link set eth3 master br0
+        - ip link set br0 up
+        - ip link set eth1 up
+        - ip link set eth2 up
+        - ip link set eth3 up
+    sw2:
+      kind: linux
+      image: frrouting/frr:latest
+      exec:
+        - ip link add br0 type bridge
+        - ip link set br0 type bridge stp_state 1
+        - ip link set eth1 master br0
+        - ip link set eth2 master br0
+        - ip link set br0 up
+        - ip link set eth1 up
+        - ip link set eth2 up
+    sw3:
+      kind: linux
+      image: frrouting/frr:latest
+      exec:
+        - ip link add br0 type bridge
+        - ip link set br0 type bridge stp_state 1
+        - ip link set eth1 master br0
+        - ip link set eth2 master br0
+        - ip link set eth3 master br0
+        - ip link set br0 up
+        - ip link set eth1 up
+        - ip link set eth2 up
+        - ip link set eth3 up
+    sw4:
+      kind: linux
+      image: frrouting/frr:latest
+      exec:
+        - ip link add br0 type bridge
+        - ip link set br0 type bridge stp_state 1
+        - ip link set eth1 master br0
+        - ip link set eth2 master br0
+        - ip link set br0 up
+        - ip link set eth1 up
+        - ip link set eth2 up
+    h1:
+      kind: linux
+      image: alpine:3.20
+      exec:
+        - ip addr add 10.20.0.1/24 dev eth1
+        - ip link set eth1 up
+    h2:
+      kind: linux
+      image: alpine:3.20
+      exec:
+        - ip addr add 10.20.0.2/24 dev eth1
+        - ip link set eth1 up
+
+  links:
+    # Ring sw1 – sw2 – sw3 – sw4 – sw1  (genau eine Schleife)
+    - endpoints: ["sw1:eth1", "sw2:eth1"]
+    - endpoints: ["sw2:eth2", "sw3:eth1"]
+    - endpoints: ["sw3:eth2", "sw4:eth1"]
+    - endpoints: ["sw4:eth2", "sw1:eth2"]
+    # Zugangsports
+    - endpoints: ["sw1:eth3", "h1:eth1"]
+    - endpoints: ["sw3:eth3", "h2:eth1"]
