@@ -19,6 +19,8 @@ ein virtuelles Netz starten, messen und mitschneiden — ohne Vendor-Images und 
 - Installation: siehe <https://containerlab.dev/install/> — ein `sudo`-fähiger Nutzer genügt
 - Images: `frrouting/frr:latest` (Alpine-Basis, bringt `ip`/`bridge`/`tc` mit), `alpine:3.20`
   (frei, ohne Registrierung — **BYOD-fähig**)
+- **Mac mit Apple Silicon:** containerlab in einer OrbStack-VM, FRR als natives arm64-Image —
+  siehe [`Labs/README.md`](../README.md), Abschnitt *Mac mit Apple Silicon*
 - Tools im Container: `ping` und `traceroute` sind enthalten; **`tcpdump` und `iperf3` fehlen**
   in beiden Images und werden per `apk add …` nachinstalliert (Internetzugang aus dem Container
   nötig)
