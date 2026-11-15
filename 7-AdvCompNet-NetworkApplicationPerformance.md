@@ -357,7 +357,7 @@ sysctl net.ipv4.tcp_congestion_control=bbr      # umschalten (Demo)
 
 ![h:300px](figures/6-netapp-performance/fig-16.png)
 
-*Quelle: blog.cerowrt.org/post/bbrs_basic_beauty · 7E §13.3–13.4*
+*Quelle: blog-cerowrt.bufferbloat.net/post/bbrs_basic_beauty · 7E §13.3–13.4*
 
 ---
 
@@ -462,7 +462,7 @@ sysctl net.ipv4.tcp_congestion_control=bbr      # umschalten (Demo)
 **Praxis & Werkzeuge**
 - 💡 [quic-go](https://github.com/quic-go/quic-go) · [picoquic](https://github.com/private-octopus/picoquic) · [aioquic](https://github.com/aiortc/aioquic)
 - 💡 [fasterdata.es.net](https://fasterdata.es.net/) — Mess- und Tuning-Tipps
-- 💡 [blog.cerowrt.org](http://blog.cerowrt.org/post/bbrs_basic_beauty/) — BBR-Analyse
+- 💡 [blog-cerowrt.bufferbloat.net](https://blog-cerowrt.bufferbloat.net/post/bbrs_basic_beauty/) — BBR-Analyse
 - 💡 [Cloudflare Radar](https://radar.cloudflare.com/) — Protokoll-/Traffic-Statistik live
 
 </div>

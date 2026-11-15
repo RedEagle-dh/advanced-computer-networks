@@ -141,7 +141,7 @@ Sebastian Rieger · MMNet
 - 💡 [7E §4.5 – Routing in Datacenters](https://7e.systemsapproach.org/routing.html#routing-5-routing-in-datacenters) – Fabrics, Routing, ECMP
 - [7E §9.4 – Virtual Networks for Datacenters](https://7e.systemsapproach.org/virtual.html#virt-4-virtual-networks-for-datacenters) – Brücke zu Kapitel 3
 - [SDN-Buch Ch.3 – Basic Architecture](https://sdn.systemsapproach.org/arch.html) · [Ch.7 – Leaf-Spine Fabric](https://sdn.systemsapproach.org/trellis.html)
-- [Dell'Oro Group 12/2025](https://www.delloro.com/news/data-center-switch-market-doubled-in-three-years-hits-record-3q-2025/) · Gartner 3/2025 – Marktdaten
+- [Dell'Oro Group 12/2025](https://www.delloro.com/newsroom/data-center-switch-market-doubled-in-three-years-hits-record-3q-2025/) · Gartner 3/2025 – Marktdaten
 - [engineering.fb.com – Building Meta's GenAI Infrastructure (03/2024)](https://engineering.fb.com/2024/03/12/data-center-engineering/building-metas-genai-infrastructure/)
 
 **Fazit:** Grundlage sind „Computer Networks: A Systems Approach" (7E, CC BY 4.0) und das SDN-Buch.
@@ -258,7 +258,7 @@ Aufbau eines Rechenzentrums – Ressourcen:
 
 **Fazit:** Strom und Kühlung begrenzen ein RZ härter als die Netztechnik.
 
-*[DE-CIX bei arte 11/2025](https://www.arte.tv/de/videos/120435-000-A/droht-der-digitale-blackout/)* (7:24)
+*[DE-CIX bei arte 11/2025](https://www.dailymotion.com/video/x9u006i)* (7:24)
 
 ---
 
@@ -828,7 +828,7 @@ Aufbau eines Rechenzentrums – Ressourcen:
 **Praxis & Betrieb**
 - 💡 [Meta: Building GenAI Infrastructure (03/2024)](https://engineering.fb.com/2024/03/12/data-center-engineering/building-metas-genai-infrastructure/)
 - 💡 [Meta: RDMA over Ethernet (SIGCOMM 2024)](https://cs.stanford.edu/~keithw/sigcomm2024/sigcomm24-final246-acmpaginated.pdf)
-- 💡 [Dell'Oro: DC-Switch-Markt 3Q 2025](https://www.delloro.com/news/data-center-switch-market-doubled-in-three-years-hits-record-3q-2025/)
+- 💡 [Dell'Oro: DC-Switch-Markt 3Q 2025](https://www.delloro.com/newsroom/data-center-switch-market-doubled-in-three-years-hits-record-3q-2025/)
 - 💡 [DE-CIX Frankfurt – Traffic-Statistik](https://www.de-cix.net/en/locations/frankfurt/statistics)
 
 </div>
