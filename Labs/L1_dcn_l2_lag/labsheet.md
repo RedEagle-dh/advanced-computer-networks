@@ -11,6 +11,8 @@ Ersetzt das frühere GNS3-Lab `2_dcn_stp_lag` (Arista vEOS). Läuft mit **Linux-
 - **Warum** L2-Redundanz überhaupt ein Problem ist: Broadcast-Schleifen und der Grund für STP
 - **STP** beobachten: wer ist Root, welcher Port blockiert, wie lange dauert die Konvergenz?
 - **Link Aggregation (LACP/802.3ad)** als Alternative: Bündelung statt Blockierung
+- **VLANs** konfigurieren (Access/Trunk) und das **802.1Q-Tag** im Mitschnitt sehen
+- ein **VXLAN-Overlay** (VNI, VTEP, UDP 4789) aufbauen und die Kapselung im Underlay nachweisen
 - Beide Verfahren **messen** und die Betriebsfolgen bewerten (Ausfallzeit, Auslastung, Skalierung)
 
 ## Voraussetzungen
@@ -134,7 +136,57 @@ docker exec clab-acn-l1-lag-sw1 ip link set eth1 down         # Terminal 2
 
 ---
 
-## Aufgabe 3 — Bewertung und Ausblick
+## Szenario 3 — VLANs und VXLAN (Kapitel 3 / L5)
+
+Deploy: `containerlab deploy -t scenario3-vlan-vxlan.clab.yml`
+
+Zwei Switches (Linux-Bridges mit **VLAN-Filtering**) über einen getaggten Trunk, je zwei
+Access-Hosts — plus ein **VXLAN-Overlay (VNI 100)** über eine eigene L3-Strecke
+(10.9.9.0/30), das h5 und h6 trotz getrennter Switches in ein logisches Segment legt:
+
+| Node | VLAN / Rolle | Adresse |
+|---|---|---|
+| h1 (sw1) / h3 (sw2) | VLAN 10, Access-Port | 10.10.0.1 / .2 |
+| h2 (sw1) / h4 (sw2) | VLAN 20, Access-Port | 10.20.0.1 / .2 |
+| h5 (sw1) / h6 (sw2) | hinter dem VTEP (VNI 100) | 10.30.0.10 / .11 |
+
+### Aufgabe 3.1 — VLAN-Trennung prüfen
+
+1. `docker exec clab-acn-l1-vlan-vxlan-h1 ping -c2 10.10.0.2` — gleiches VLAN über den
+   Trunk: **erreichbar**.
+2. `docker exec clab-acn-l1-vlan-vxlan-h1 ping -c2 10.20.0.1` — anderes VLAN:
+   **unerreichbar** (kein Router im Lab — die VLAN-Grenze ist hier hart; Routing ginge über
+   einen L3-Switch bzw. „Router on a stick").
+3. VLAN-Tabelle: `docker exec clab-acn-l1-vlan-vxlan-sw1 bridge vlan` — Access-Ports
+   **untagged** (PVID), Trunk `eth1` **tagged** mit VID 10 und 20.
+
+### Aufgabe 3.2 — das 802.1Q-Tag sichtbar machen
+
+```bash
+docker exec clab-acn-l1-vlan-vxlan-sw1 sh -c 'apk add -q tcpdump && timeout 8 tcpdump -ni eth1 -e vlan -c 4'
+docker exec clab-acn-l1-vlan-vxlan-h1 ping -c3 10.10.0.2
+```
+
+Sichtbar: `ethertype 802.1Q (0x8100) … vlan 10` — dieselben Frames laufen auf den
+Access-Ports (eth2) **ungetaggt**. Genau die Access-/Trunk-Unterscheidung aus der Vorlesung.
+
+### Aufgabe 3.3 — VXLAN: Layer 2 über Layer 3
+
+1. `docker exec clab-acn-l1-vlan-vxlan-h5 ping -c2 10.30.0.11` — h5 und h6 hängen an
+   **verschiedenen** Switches und sind trotzdem im selben logischen Segment (VNI 100).
+2. Kapselung auf dem Underlay mitschneiden:
+   ```bash
+   docker exec clab-acn-l1-vlan-vxlan-sw1 sh -c 'timeout 8 tcpdump -ni eth5 -vv -c 3 "udp port 4789"'
+   docker exec clab-acn-l1-vlan-vxlan-h5 ping -c3 10.30.0.11
+   ```
+   Sichtbar: äußeres IP (10.9.9.1 → 10.9.9.2, UDP **4789**) → VXLAN-Header (**vni 100**) →
+   inneres Ethernet-Frame von h5.
+3. **Frage:** Warum braucht VXLAN ein IP-Underlay, während der VLAN-Trunk mit getaggtem
+   L2 auskommt? Und was passiert mit Broadcast im VXLAN-Tunnel (BUM → Remote-VTEP)?
+
+---
+
+## Bewertung und Ausblick
 
 1. Vergleichen Sie STP und LACP in einer Tabelle: **Konvergenz, Bandbreitennutzung, Konfiguration,
    Verhalten bei mehr als zwei Switches**.
@@ -155,11 +207,19 @@ docker exec clab-acn-l1-lag-sw1 ip link set eth1 down         # Terminal 2
 | `cat /proc/net/bonding/bond0` | Mode `IEEE 802.3ad`, **beide** Slaves `MII Status: up` |
 | `h1 → h2` (Szenario 2) | 0 % Verlust |
 | Linkausfall (Szenario 2) | **0 %** Verlust, ein Slave `down`, Bond bleibt `up` |
+| `h1 → 10.10.0.2` (Szenario 3) | 0 % Verlust — VLAN 10 über den Trunk |
+| `h1 → 10.20.0.1` (Szenario 3) | **100 % Verlust** — VLAN-Grenze ohne Router |
+| `tcpdump -e vlan` auf dem Trunk (Szenario 3) | 802.1Q-Header (0x8100) mit VID 10/20 sichtbar |
+| `h5 → 10.30.0.11` (Szenario 3) | 0 % Verlust — VXLAN überbrückt die Switches (L3-Underlay) |
+| `tcpdump "udp port 4789"` (Szenario 3) | VXLAN-Kapselung sichtbar, **vni 100** |
 
 ## Stolperfallen
 
 - **Bridge-Werkzeuge:** `bridge`/`ip` kommen aus **iproute2**. Alpine-BusyBox kennt `ip link add … type bridge`
-  nur eingeschränkt — deshalb laufen die Switches hier im `frrouting/frr`-Image (Debian-Basis).
+  nur eingeschränkt — deshalb laufen die Switches hier im `frrouting/frr`-Image (Alpine-Basis, volles iproute2).
+- **VLAN-Filtering:** das `bridge vlan del dev … vid 1` nicht vergessen — ein neuer Bridge-Port landet
+  sonst zusätzlich in VLAN 1. Die VXLAN-Bridge (`br1`) hat Filtering bewusst **aus**: sie ist ein
+  reines Access-Segment hinter dem VTEP.
 - **STP-Zeiten:** Nach dem Start ca. **30–50 s** warten, bevor Sie messen — die Bridge durchläuft
   Listening/Learning.
 - **Bond-Reihenfolge:** Slaves müssen **down** sein, bevor sie `master bond0` bekommen, sonst meckert der Kernel.

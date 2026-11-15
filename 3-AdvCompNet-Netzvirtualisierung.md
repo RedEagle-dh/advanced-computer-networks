@@ -452,8 +452,8 @@ Viele Peers direkt, oft per WireGuard — kein vertrautes LAN: jeder Zugriff wir
 
 ## Praktische Übungen und Demo-Links 🛠️🧑‍🔬
 
-1. **VLANs im containerlab (Lab L1, FRR):** zwei VLANs auf Linux-Bridges, Trunk zum zweiten Switch — mit `tcpdump -e` prüfen, ob das Tag sichtbar ist
-2. **VXLAN-Tunnel aufbauen:** `ip link add vxlan0 type vxlan id 100 remote <VTEP> dstport 4789` auf zwei Hosts, dann Ping über das Overlay und Kapselung in Wireshark ansehen
+1. **VLANs im containerlab (Lab L1, Szenario 3, FRR):** zwei VLANs auf Linux-Bridges, Trunk zum zweiten Switch — mit `tcpdump -e` prüfen, ob das Tag sichtbar ist
+2. **VXLAN-Tunnel aufbauen (Lab L1, Szenario 3):** Tunnel `id 100` zwischen zwei VTEPs, dann Ping über das Overlay und Kapselung im Mitschnitt ansehen (`udp port 4789`, VNI sichtbar)
 3. **Overlay mit und ohne Control Plane:** gleiches Szenario einmal per Flood & Filter, einmal mit statischen FDB-Einträgen
 4. **Microsegmentation:** Netzwerk-Policies mit Cilium beobachten — was passiert ohne Policy, was mit?
 5. **VPN-Analyse:** WireGuard-Tunnel zwischen zwei Containern, Mitschnitt auf dem Underlay

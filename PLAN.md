@@ -82,7 +82,7 @@ Zielstack (Entscheidungen 2026-09-24/10-04): **FRR, wo es geht** (`frrouting/frr
 | Lab | Ordner | Thema / Stack | Zuordnung | Status |
 |---|---|---|---|---|
 | L0 | `Labs/L0_setup_tools/` | Setup & Werkzeuge: Topologie starten, `ping`/`traceroute`/`tcpdump`/`iperf3`, Störungen via `netem` | zu L1 (Einstieg) | ✅ gebaut & verifiziert |
-| L1 | `Labs/L1_dcn_l2_lag/` | DCN Layer 2: STP-Ring vs. LACP-Bond (containerlab, Bridges/Bonds, FRR) | zu L3/L4 (K2) | ✅ gebaut & verifiziert (STP ~30 s Ausfall vs. LACP 0 % Verlust) |
+| L1 | `Labs/L1_dcn_l2_lag/` | DCN Layer 2: STP-Ring vs. LACP-Bond, **+ VLAN/VXLAN (Szenario 3)** (containerlab, Bridges/Bonds, FRR) | zu L3/L4 (K2) **und L5 (K3)** | ✅ gebaut & verifiziert (STP ~30 s Ausfall vs. LACP 0 % Verlust; VLAN-Tag und VXLAN-Kapselung sichtbar) |
 | L2 | `Labs/L2_dcn_bgp_fabric/` | DCN Layer 3: Leaf-Spine-BGP-Fabric, ECMP, Fehlertoleranz/BFD, Konvergenzmessung (FRR `bgpd`) | zu L4 (K2) | ✅ gebaut & verifiziert (6/6 BGP, 12/12 Pings, BFD-Failover) |
 | L3 | `Labs/L3_sdn_mininet/` | SDN mit Mininet/OpenFlow: eigenes Image `acn-l3-mininet` (Mininet 2.3.0 + OVS 3.3.9 + os-ken 4.2.2), Controller-Verhalten messbar | zu L6/L7 (K4) | ✅ gebaut & verifiziert (pingall 0 %, ohne Controller 100 %, mit os-ken 0 %) |
 | L4 | `Labs/L4_p4_intro/` | Programmable Data Plane: p4lang-Images (`p4c` 1.2.5.18 + `bmv2` 1.15.7) in containerlab, P4-Code vorbereitet (Aufgaben von `5_p4_intro` übernommen) | zu L9/L10 (K6) | ✅ gebaut & verifiziert (Tabellenbefüllung 0 %, P4Runtime vorbereitet) |

@@ -1,0 +1,127 @@
+# ACN Lab L1 — Szenario 3: VLANs und VXLAN (Kapitel 3)
+# Deploy:  containerlab deploy -t scenario3-vlan-vxlan.clab.yml
+# Abbau:   containerlab destroy -t scenario3-vlan-vxlan.clab.yml --cleanup
+# Doku:    labsheet.md, Abschnitt "Szenario 3"
+#
+# Zwei Switches (Linux-Bridges mit VLAN-Filtering) über einen getaggten Trunk (VLAN 10/20),
+# je zwei Access-Hosts — plus ein VXLAN-Overlay (VNI 100, UDP 4789) über eine eigene
+# L3-Strecke, das h5 und h6 trotz getrennter Switches in ein logisches Segment legt.
+# Kein STP nötig (keine Schleife); kein Router — VLAN-Grenzen sind hier hart.
+name: acn-l1-vlan-vxlan
+
+# Mgmt-Netz IPv4-only (siehe Stolperfalle 9 in labsheet.md / PLANNED-CHANGES §4)
+mgmt:
+  ipv4-subnet: 172.20.20.0/24
+  ipv6-subnet: ""
+
+topology:
+  nodes:
+    sw1:
+      kind: linux
+      image: frrouting/frr:latest
+      exec:
+        # VLAN-Bridge: Trunk (eth1, tagged 10+20) und zwei Access-Ports
+        - ip link add br0 type bridge vlan_filtering 1
+        - ip link set br0 up
+        - ip link set eth1 master br0
+        - bridge vlan del dev eth1 vid 1
+        - bridge vlan add dev eth1 vid 10
+        - bridge vlan add dev eth1 vid 20
+        - ip link set eth2 master br0
+        - bridge vlan del dev eth2 vid 1
+        - bridge vlan add dev eth2 vid 10 pvid untagged
+        - ip link set eth3 master br0
+        - bridge vlan del dev eth3 vid 1
+        - bridge vlan add dev eth3 vid 20 pvid untagged
+        - ip link set eth1 up
+        - ip link set eth2 up
+        - ip link set eth3 up
+        # L3-Underlay für VXLAN (eigene Strecke zum sw2)
+        - ip addr add 10.9.9.1/30 dev eth5
+        - ip link set eth5 up
+        # VXLAN VNI 100 in eigene Bridge (h5 als Access-Port)
+        - ip link add br1 type bridge
+        - ip link add vxlan100 type vxlan id 100 local 10.9.9.1 remote 10.9.9.2 dstport 4789
+        - ip link set vxlan100 master br1
+        - ip link set vxlan100 up
+        - ip link set eth4 master br1
+        - ip link set eth4 up
+        - ip link set br1 up
+    sw2:
+      kind: linux
+      image: frrouting/frr:latest
+      exec:
+        - ip link add br0 type bridge vlan_filtering 1
+        - ip link set br0 up
+        - ip link set eth1 master br0
+        - bridge vlan del dev eth1 vid 1
+        - bridge vlan add dev eth1 vid 10
+        - bridge vlan add dev eth1 vid 20
+        - ip link set eth2 master br0
+        - bridge vlan del dev eth2 vid 1
+        - bridge vlan add dev eth2 vid 10 pvid untagged
+        - ip link set eth3 master br0
+        - bridge vlan del dev eth3 vid 1
+        - bridge vlan add dev eth3 vid 20 pvid untagged
+        - ip link set eth1 up
+        - ip link set eth2 up
+        - ip link set eth3 up
+        - ip addr add 10.9.9.2/30 dev eth5
+        - ip link set eth5 up
+        - ip link add br1 type bridge
+        - ip link add vxlan100 type vxlan id 100 local 10.9.9.2 remote 10.9.9.1 dstport 4789
+        - ip link set vxlan100 master br1
+        - ip link set vxlan100 up
+        - ip link set eth4 master br1
+        - ip link set eth4 up
+        - ip link set br1 up
+    h1:
+      kind: linux
+      image: alpine:3.20
+      exec:
+        - ip addr add 10.10.0.1/24 dev eth1
+        - ip link set eth1 up
+    h2:
+      kind: linux
+      image: alpine:3.20
+      exec:
+        - ip addr add 10.20.0.1/24 dev eth1
+        - ip link set eth1 up
+    h3:
+      kind: linux
+      image: alpine:3.20
+      exec:
+        - ip addr add 10.10.0.2/24 dev eth1
+        - ip link set eth1 up
+    h4:
+      kind: linux
+      image: alpine:3.20
+      exec:
+        - ip addr add 10.20.0.2/24 dev eth1
+        - ip link set eth1 up
+    h5:
+      kind: linux
+      image: alpine:3.20
+      exec:
+        - ip addr add 10.30.0.10/24 dev eth1
+        - ip link set eth1 up
+    h6:
+      kind: linux
+      image: alpine:3.20
+      exec:
+        - ip addr add 10.30.0.11/24 dev eth1
+        - ip link set eth1 up
+
+  links:
+    # Trunk sw1 ↔ sw2 (trägt VLAN 10 und 20 getaggt)
+    - endpoints: ["sw1:eth1", "sw2:eth1"]
+    # Access-Ports VLAN 10 / VLAN 20
+    - endpoints: ["sw1:eth2", "h1:eth1"]
+    - endpoints: ["sw1:eth3", "h2:eth1"]
+    - endpoints: ["sw2:eth2", "h3:eth1"]
+    - endpoints: ["sw2:eth3", "h4:eth1"]
+    # VXLAN-Access (h5/h6 hängen an br1 hinter dem VTEP)
+    - endpoints: ["sw1:eth4", "h5:eth1"]
+    - endpoints: ["sw2:eth4", "h6:eth1"]
+    # L3-Underlay für VXLAN (sw1:eth5 ↔ sw2:eth5, 10.9.9.0/30)
+    - endpoints: ["sw1:eth5", "sw2:eth5"]

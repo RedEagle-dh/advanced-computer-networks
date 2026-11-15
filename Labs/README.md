@@ -8,7 +8,7 @@ GNS3-/Mininet-Labs in ihren jeweiligen Unterordnern.
 | Lab | Ordner | Thema | Stack | Status |
 |---|---|---|---|---|
 | L0 | `L0_setup_tools/` | Setup, Werkzeuge, Netz-Diagnose | containerlab, Alpine, FRR | ✅ gebaut & verifiziert |
-| L1 | `L1_dcn_l2_lag/` | Layer 2 im RZ: STP vs. Link Aggregation (LACP) | containerlab, Linux-Bridges/Bonds, FRR | ✅ gebaut & verifiziert (STP 30 s Ausfall vs. LACP 0 %) |
+| L1 | `L1_dcn_l2_lag/` | Layer 2 im RZ: STP vs. Link Aggregation (LACP), + VLAN/VXLAN (Szenario 3) | containerlab, Linux-Bridges/Bonds, FRR | ✅ gebaut & verifiziert (STP 30 s Ausfall vs. LACP 0 %; 802.1Q-Tag und VXLAN/vni 100 sichtbar) |
 | L2 | `L2_dcn_bgp_fabric/` | Leaf-Spine-Fabric mit BGP + Fehlertoleranz/BFD | containerlab, FRR | ✅ gebaut & verifiziert (Konvergenz ~60 s, ECMP, BFD-Failover) |
 | L3 | `L3_sdn_mininet/` | SDN mit Mininet/OpenFlow, eigene Topologien | Mininet, Controller (`os-ken`/ONOS) | ⏳ Portierung von `4_mininet_intro*` |
 | L4 | `L4_p4_programmable_data_plane/` | Programmable Data Plane mit P4 | Mininet/bmv2, `prona/p4-container` (Image aktualisieren!) | ⏳ Portierung von `5_p4_intro` |
