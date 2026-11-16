@@ -47,8 +47,9 @@ containerlab inspect -t setup.clab.yml
 containerlab destroy -t setup.clab.yml --cleanup
 ```
 
-Topologie im Browser ansehen: `containerlab graph -t setup.clab.yml` startet einen Webserver unter
-`http://localhost:50080` (geht auch ohne laufendes Lab; beenden mit Strg+C).
+> [!TIP]
+> **Topologie im Browser ansehen:** `containerlab graph -t setup.clab.yml` startet einen Webserver
+> unter `http://localhost:50080` (geht auch ohne laufendes Lab; beenden mit Strg+C).
 
 > **Wichtig:** Interface-IPs werden im Topology-File per `exec` gesetzt — das läuft **nach** dem
 > Anlegen der Links. Adressen in der `frr.conf` würden von Zebra gelesen, *bevor* die Links

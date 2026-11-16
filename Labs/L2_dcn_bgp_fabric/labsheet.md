@@ -54,8 +54,9 @@ containerlab inspect -t fabric.clab.yml        # Status + Management-IPs
 containerlab destroy -t fabric.clab.yml --cleanup
 ```
 
-Topologie im Browser ansehen: `containerlab graph -t fabric.clab.yml` startet einen Webserver unter
-`http://localhost:50080` (geht auch ohne laufendes Lab; beenden mit Strg+C).
+> [!TIP]
+> **Topologie im Browser ansehen:** `containerlab graph -t fabric.clab.yml` startet einen Webserver
+> unter `http://localhost:50080` (geht auch ohne laufendes Lab; beenden mit Strg+C).
 
 ---
 
