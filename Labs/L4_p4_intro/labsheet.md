@@ -47,6 +47,9 @@ containerlab inspect -t p4.clab.yml
 containerlab destroy -t p4.clab.yml --cleanup
 ```
 
+Topologie im Browser ansehen: `containerlab graph -t p4.clab.yml` startet einen Webserver unter
+`http://localhost:50080` (geht auch ohne laufendes Lab; beenden mit Strg+C).
+
 ---
 
 ## Aufgabe 1 — Repeater: erster Kontakt mit der Pipeline

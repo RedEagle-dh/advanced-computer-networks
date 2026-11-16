@@ -40,6 +40,9 @@ docker exec -it clab-acn-l3-mininet-mininet bash
 containerlab destroy -t sdn.clab.yml --cleanup
 ```
 
+Topologie im Browser ansehen: `containerlab graph -t sdn.clab.yml` startet einen Webserver unter
+`http://localhost:50080` (geht auch ohne laufendes Lab; beenden mit Strg+C).
+
 Alles Weitere passiert **im Knoten** (Sie sind dort root): zuerst `cd /lab` — dort liegen die
 Lab-Dateien (`OpenFlowTopo.py`, `OpenFlowApp.py`, …). Das Mininet-Netz besteht aus
 Netzwerk-Namespaces *im Container* — es braucht keinen Controller-Container extra; der

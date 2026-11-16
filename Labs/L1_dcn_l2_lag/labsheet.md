@@ -54,6 +54,10 @@ containerlab inspect -t scenario1-stp.clab.yml
 containerlab destroy -t scenario1-stp.clab.yml --cleanup
 ```
 
+Topologie im Browser ansehen: `containerlab graph -t scenario1-stp.clab.yml` (bzw. die Datei des
+jeweiligen Szenarios) startet einen Webserver unter `http://localhost:50080` (geht auch ohne
+laufendes Lab; beenden mit Strg+C).
+
 ### Aufgabe 1.1 — Zustand verstehen
 
 1. Prüfen Sie auf jedem Switch die Port-Zustände:
