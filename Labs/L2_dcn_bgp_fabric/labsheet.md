@@ -62,9 +62,12 @@ containerlab destroy -t fabric.clab.yml --cleanup
 
 ## Wichtig beim Start
 
-Nach `containerlab deploy` **ca. 60 s warten**, bevor Sie messen: BGP braucht auf einem frischen
-Boot einige Zyklen, bis alle Sitzungen stehen und beide Pfade in der Routingtabelle sind
-(gemessen: nach 20 s nur ein Nexthop, nach 60 s beide → ECMP). Prüfen Sie zuerst:
+> [!IMPORTANT]
+> Nach `containerlab deploy` **ca. 60 s warten**, bevor Sie messen: BGP braucht auf einem frischen
+> Boot einige Zyklen, bis alle Sitzungen stehen und beide Pfade in der Routingtabelle sind
+> (gemessen: nach 20 s nur ein Nexthop, nach 60 s beide → ECMP).
+
+Prüfen Sie zuerst:
 
 ```bash
 docker exec clab-acn-l2-fabric-leaf1 vtysh -c "show ip bgp summary"     # 2 Nachbarn, Spalte State/PfxRcd > 0
@@ -72,6 +75,7 @@ docker exec clab-acn-l2-fabric-leaf1 ip route show 172.23.27.0/24       # 2 Next
 docker exec clab-acn-l2-fabric-leaf1 vtysh -c "show bfd peers brief"    # beide up
 ```
 
+> [!CAUTION]
 > **Nicht** `frrinit.sh restart` in einem Knoten ausführen: Das beendet PID 1, Docker startet den
 > Container neu — und damit sind alle veth-Interfaces im Container weg. Einzelne Daemons dürfen
 > neu gestartet werden (`pkill bgpd`, watchfrr startet ihn neu); genau das macht die Topologie
